@@ -1,0 +1,403 @@
+{
+  "info": {
+    "name": "SIS - Sistema de Informação de Saúde",
+    "description": "API para gestão de consultas médicas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (Utente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fname\": \"Maria\",\n  \"lname\": \"Silva\",\n  \"email\": \"maria@example.com\",\n  \"phone\": \"923456789\",\n  \"password\": \"password123\",\n  \"nif\": \"123456789\",\n  \"date_of_birth\": \"1990-05-15\",\n  \"street\": \"Rua Principal, 123\",\n  \"city\": \"Luanda\",\n  \"zip\": \"12345\",\n  \"insurance_company\": \"ENSA\",\n  \"insurance_number\": \"ENSA123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": ["{{base_url}}"],
+              "path": ["register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maria@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me",
+              "host": ["{{base_url}}"],
+              "path": ["me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Specialties",
+      "item": [
+        {
+          "name": "List Specialties (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/specialties",
+              "host": ["{{base_url}}"],
+              "path": ["specialties"]
+            }
+          }
+        },
+        {
+          "name": "Get Specialty Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/specialties/:id",
+              "host": ["{{base_url}}"],
+              "path": ["specialties", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "specialty_uuid_here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Doctors by Specialty (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/specialties/:id/doctors",
+              "host": ["{{base_url}}"],
+              "path": ["specialties", ":id", "doctors"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "specialty_uuid_here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Medical Records",
+      "item": [
+        {
+          "name": "Get My Medical Record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/medical-record",
+              "host": ["{{base_url}}"],
+              "path": ["medical-record"]
+            }
+          }
+        },
+        {
+          "name": "Update Personal Health Data",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gender\": \"feminino\",\n  \"blood_type\": \"O+\",\n  \"allergies\": [\"Penicilina\", \"Amendoim\"],\n  \"family_health_history\": {\n    \"diabetes\": true,\n    \"hipertensao\": false\n  },\n  \"vaccination_record\": [\n    {\n      \"vaccine\": \"COVID-19\",\n      \"date\": \"2024-01-15\",\n      \"dose\": \"1ª dose\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/medical-record/personal-data",
+              "host": ["{{base_url}}"],
+              "path": ["medical-record", "personal-data"]
+            }
+          }
+        },
+        {
+          "name": "Get User Medical Record (Admin/Medico)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/medical-record/user/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["medical-record", "user", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "user_uuid_here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "List My Appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments?per_page=15&status=agendada",
+              "host": ["{{base_url}}"],
+              "path": ["appointments"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "status",
+                  "value": "agendada",
+                  "description": "agendada, confirmada, realizada, cancelada"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medical_staff_id\": \"medical_staff_uuid_here\",\n  \"specialty_id\": \"specialty_uuid_here\",\n  \"appointment_date\": \"2026-01-15 10:00:00\",\n  \"type\": \"consulta\",\n  \"reason\": \"Dor de cabeça persistente\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/appointments",
+              "host": ["{{base_url}}"],
+              "path": ["appointments"]
+            }
+          }
+        },
+        {
+          "name": "Get Appointment Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments/:id",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "appointment_uuid_here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments/:id/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", ":id", "cancel"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "appointment_uuid_here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Available Slots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments/available-slots?medical_staff_id=staff_uuid&date=2026-01-15",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", "available-slots"],
+              "query": [
+                {
+                  "key": "medical_staff_id",
+                  "value": "staff_uuid"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-01-15"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "health"]
+        }
+      }
+    }
+  ]
+}

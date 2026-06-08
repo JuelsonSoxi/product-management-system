@@ -1,0 +1,96 @@
+#version: '3.8'
+
+services:
+  # Base de Dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: sis_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sis_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: sis_user
+      MYSQL_PASSWORD: sis_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - sis_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: sis_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: sis_user
+      PMA_PASSWORD: sis_password
+    depends_on:
+      - db
+    networks:
+      - sis_network
+
+  # Backend Laravel
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sis_backend
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: sis_db
+      DB_USERNAME: sis_user
+      DB_PASSWORD: sis_password
+    depends_on:
+      - db
+    networks:
+      - sis_network
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sis_frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    ports:
+      - "3000:3000"
+    networks:
+      - sis_network
+
+  # Servidor Web Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: sis_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+      - "8443:443"
+    volumes:
+      - ./backend:/var/www
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+    networks:
+      - sis_network
+
+networks:
+  sis_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
