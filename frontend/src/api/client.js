@@ -43,18 +43,14 @@ export const authAPI = {
   login: (data) => apiClient.post('/login', data),
   logout: () => apiClient.post('/logout'),
   getProfile: () => apiClient.get('/me'),
+  getStats: () => apiClient.get('/admin/stats'),
 };
 
 // Product APIs
 export const productAPI = {
   create: (data) => apiClient.post('/products', data),
-  getAll: () => apiClient.get('/products'),
+  list: () => apiClient.get('/products'),
   getOne: (id) => apiClient.get(`/products/${id}`),
   update: (id, data) => apiClient.put(`/products/${id}`, data),
   delete: (id) => apiClient.delete(`/products/${id}`),
-};
-
-// Admin APIs
-export const adminAPI = {
-  getStats: () => apiClient.get('/admin/stats'),
 };

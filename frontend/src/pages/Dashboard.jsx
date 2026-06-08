@@ -1,188 +1,125 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import apiClient from '../api/client';
 import Navbar from '../components/Navbar';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  const fetchAppointments = async () => {
-    try {
-      const response = await apiClient.get('/v1/appointments?per_page=5');
-      setAppointments(response.data.data.data || []);
-    } catch (error) {
-      console.error('Erro ao buscar consultas:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    const badges = {
-      agendada: 'bg-blue-100 text-blue-800',
-      confirmada: 'bg-green-100 text-green-800',
-      realizada: 'bg-gray-100 text-gray-800',
-      cancelada: 'bg-red-100 text-red-800',
-    };
-    return badges[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('pt-PT', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Welcome */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 mb-8 text-white">
-          <h1 className="text-3xl font-bold mb-2">
-            Bem-vindo(a), {user.fname}! 👋
-          </h1>
-          <p className="text-blue-100">
-            {user.roles?.[0]?.name === 'utente' && 'Gerencie suas consultas e informações médicas'}
-            {user.roles?.[0]?.name === 'medico' && 'Veja suas consultas agendadas'}
-            {user.roles?.[0]?.name === 'administrativo' && 'Gerencie o sistema hospitalar'}
-          </p>
-        </div>
-
-        {/* Cards de Ações Rápidas */}
-        {user.roles?.[0]?.name === 'utente' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Link
-              to="/appointments/new"
-              className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition group"
-            >
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition">
-                <span className="text-2xl">📅</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Marcar Consulta
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Agende uma nova consulta médica
-              </p>
-            </Link>
-
-            <Link
-              to="/medical-record"
-              className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition group"
-            >
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition">
-                <span className="text-2xl">📋</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Meu RCU
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Veja seu Registo Clínico de Utente
-              </p>
-            </Link>
-
-            <Link
-              to="/specialties"
-              className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition group"
-            >
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition">
-                <span className="text-2xl">🏥</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Especialidades
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Veja especialidades e médicos
-              </p>
-            </Link>
-          </div>
-        )}
-
-        {/* Próximas Consultas */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
-              {user.roles?.[0]?.name === 'medico' ? 'Suas Consultas' : 'Próximas Consultas'}
-            </h2>
-            <Link
-              to="/appointments"
-              className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-            >
-              Ver todas →
-            </Link>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pt-20">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          {/* Welcome */}
+          <div className="mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Bem-vindo, <span className="text-blue-600">{user?.name || 'Utilizador'}</span>! 👋
+            </h1>
+            <p className="text-gray-600 text-lg">
+              {user?.role === 'admin' 
+                ? '📊 Painel administrativo - Visualize estatísticas completas do sistema'
+                : '📦 Gerencie seus produtos com facilidade e controle seu inventário'}
+            </p>
           </div>
 
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="text-gray-600 mt-4">A carregar...</p>
-            </div>
-          ) : appointments.length === 0 ? (
-            <div className="text-center py-12">
-              <span className="text-6xl mb-4 block">📅</span>
-              <p className="text-gray-600">Nenhuma consulta agendada</p>
-              {user.roles?.[0]?.name === 'utente' && (
-                <Link
-                  to="/appointments/new"
-                  className="inline-block mt-4 text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Marcar primeira consulta
-                </Link>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {appointments.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-800">
-                          {appointment.specialty?.name}
-                        </h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(appointment.status)}`}>
-                          {appointment.status}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-1">
-                        {appointment.medical_staff?.user ? 
-                          `Dr(a). ${appointment.medical_staff.user.fname} ${appointment.medical_staff.user.lname}` :
-                          'Médico não disponível'
-                        }
-                      </p>
-                      <p className="text-gray-500 text-sm">
-                        📅 {formatDate(appointment.appointment_date)}
-                      </p>
-                    </div>
-                    <Link
-                      to={`/appointments/${appointment.id}`}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                    >
-                      Ver detalhes
-                    </Link>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-gray-600 text-sm font-medium">Seu Papel</div>
+                  <div className="text-2xl font-bold text-gray-900 mt-2">
+                    {user?.role === 'admin' ? '👨‍💼 Administrador' : '👤 Cliente'}
                   </div>
                 </div>
-              ))}
+                <div className="text-4xl">{user?.role === 'admin' ? '⚙️' : '🛍️'}</div>
+              </div>
             </div>
-          )}
+
+            <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-gray-600 text-sm font-medium">Email</div>
+                  <div className="text-lg font-bold text-gray-900 mt-2 truncate">{user?.email}</div>
+                </div>
+                <div className="text-4xl">📧</div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-gray-600 text-sm font-medium">Status</div>
+                  <div className="text-lg font-bold text-green-600 mt-2">✅ Autenticado</div>
+                </div>
+                <div className="text-4xl">🔐</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="bg-white rounded-lg shadow-md p-8 mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Ações Rápidas</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button
+                onClick={() => navigate('/products')}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-lg transition flex items-center justify-center gap-2 group"
+              >
+                <span className="text-2xl group-hover:scale-110 transition">📦</span>
+                <span>Meus Produtos</span>
+              </button>
+
+              {user?.role === 'admin' && (
+                <>
+                  <button
+                    onClick={() => navigate('/admin')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 rounded-lg transition flex items-center justify-center gap-2 group"
+                  >
+                    <span className="text-2xl group-hover:scale-110 transition">📊</span>
+                    <span>Estatísticas</span>
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/admin')}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 rounded-lg transition flex items-center justify-center gap-2 group"
+                  >
+                    <span className="text-2xl group-hover:scale-110 transition">👥</span>
+                    <span>Utilizadores</span>
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/admin')}
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-4 rounded-lg transition flex items-center justify-center gap-2 group"
+                  >
+                    <span className="text-2xl group-hover:scale-110 transition">⚙️</span>
+                    <span>Configuração</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-8 text-white">
+              <h3 className="text-2xl font-bold mb-4">💡 Dica</h3>
+              <p className="text-blue-100">
+                Comece criando seus primeiros produtos. Use a busca rápida para encontrar produtos rapidamente.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-8 text-white">
+              <h3 className="text-2xl font-bold mb-4">🎯 Próximas Ações</h3>
+              <ul className="space-y-2 text-green-100">
+                <li>✓ Criar novo produto</li>
+                <li>✓ Gerenciar stock</li>
+                <li>✓ Visualizar estatísticas</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
